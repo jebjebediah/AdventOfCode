@@ -1,5 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-using Common.Helpers;
+﻿using Common.Helpers;
 
 IEnumerable<string> lines = await PuzzleInputReader.GetPuzzleInputs();
 
