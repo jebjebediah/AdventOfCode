@@ -28,10 +28,16 @@ namespace Day05
 
         public void DoMove(int fromIndex, int toIndex, int count)
         {
+            Stack<char> movingItems = new Stack<char>();
+
             for (int i = 0; i < count; i++)
             {
-                char movingCargo = RemoveFromStack(fromIndex);
-                AddToStack(toIndex, movingCargo);
+                movingItems.Push(RemoveFromStack(fromIndex));
+            }
+
+            while (movingItems.Count > 0)
+            {
+                AddToStack(toIndex, movingItems.Pop());
             }
         }
 
