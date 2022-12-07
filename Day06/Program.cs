@@ -5,7 +5,7 @@ IEnumerable<string> lines = await PuzzleInputReader.GetPuzzleInputs();
 
 string line = lines.Single();
 
-CommBuffer buffer = new CommBuffer(4);
+CommBuffer buffer = new CommBuffer(14);
 
 int i = 1;
 foreach (char c in line)
