@@ -3,7 +3,7 @@ using Day09;
 
 IEnumerable<string> lines = await PuzzleInputReader.GetPuzzleInputs();
 
-Rope rope = new Rope();
+Rope rope = new Rope(10);
 
 foreach (string line in lines)
 {

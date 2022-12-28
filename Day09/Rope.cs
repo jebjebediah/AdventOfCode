@@ -2,101 +2,122 @@ namespace Day09
 {
     public class Rope
     {
-        private int headXPos;
-        private int headYPos;
-        private int tailXPos;
-        private int tailYPos;
+        private List<Knot> knots;
 
-        public Rope()
+        public Rope(int numKnots)
         {
-            headXPos = 0;
-            headYPos = 0;
-            tailXPos = 0;
-            tailYPos = 0;
-            tailPositions = new();
-        }
+            knots = new();
 
-        private List<string> tailPositions;
+            for (int i = 0; i < numKnots; i++)
+            {
+                knots.Add(new Knot());
+            }
+        }
 
         public void MoveUp()
         {
-            headYPos++;
+            knots.First().yPos++;
 
-            if (!AreTouching())
+            for (int i = 1; i < knots.Count; i++)
             {
-                tailYPos++;
-                CorrectHorizontalAlignment();
+                FollowLeader(knots.ElementAt(i - 1), knots.ElementAt(i));
             }
-
-            tailPositions.Add($"{tailXPos} {tailYPos}");
         }
 
         public void MoveDown()
         {
-            headYPos--;
-            if (!AreTouching())
+            knots.First().yPos--;
+            
+            for (int i = 1; i < knots.Count; i++)
             {
-                tailYPos--;
-                CorrectHorizontalAlignment();
-            }
-
-            tailPositions.Add($"{tailXPos} {tailYPos}");
-        }
-
-        private void CorrectHorizontalAlignment()
-        {
-            if (headXPos != tailXPos)
-            {
-                tailXPos += (headXPos - tailXPos);
+                FollowLeader(knots.ElementAt(i - 1), knots.ElementAt(i));
             }
         }
 
         public void MoveLeft()
         {
-            headXPos--;
-            if (!AreTouching())
-            {
-                tailXPos--;
-                if (headYPos != tailYPos)
-                {
-                    tailYPos += (headYPos - tailYPos);
-                }
-            }
+            knots.First().xPos--;
 
-            tailPositions.Add($"{tailXPos} {tailYPos}");
+            for (int i = 1; i < knots.Count; i++)
+            {
+                FollowLeader(knots.ElementAt(i - 1), knots.ElementAt(i));
+            }
         }
 
         public void MoveRight()
         {
-            headXPos++;
-            if (!AreTouching())
+            knots.First().xPos++;
+
+            for (int i = 1; i < knots.Count; i++)
             {
-                tailXPos++;
-                CorrectVerticalAlignment();
+                FollowLeader(knots.ElementAt(i - 1), knots.ElementAt(i));
             }
-
-            tailPositions.Add($"{tailXPos} {tailYPos}");
-        }
-
-        private void CorrectVerticalAlignment()
-        {
-            if (headYPos != tailYPos)
-            {
-                tailYPos += (headYPos - tailYPos);
-            }
-        }
-
-        private bool AreTouching()
-        {
-            bool touchingHorizontally = Math.Abs(headXPos - tailXPos) <= 1.0;
-            bool touchingVertically = Math.Abs(headYPos - tailYPos) <= 1.0;
-
-            return touchingVertically && touchingHorizontally;
         }
 
         public int GetUniqueTailPos()
         {
-            return tailPositions.Distinct().Count();
+            return knots.Last().GetUniquePositions();
+        }
+
+        public void FollowLeader(Knot leaderKnot, Knot currentKnot)
+        {
+            if (currentKnot.IsDirectlyAbove(leaderKnot))
+            {
+                while (!currentKnot.IsTouching(leaderKnot))
+                {
+                    currentKnot.Move(EDirection.Down);
+                }
+            }
+            else if (currentKnot.IsDirectlyBelow(leaderKnot))
+            {
+                while (!currentKnot.IsTouching(leaderKnot))
+                {
+                    currentKnot.Move(EDirection.Up);
+                }
+            }
+            else if (currentKnot.IsDirectlyLeft(leaderKnot))
+            {
+                while (!currentKnot.IsTouching(leaderKnot))
+                {
+                    currentKnot.Move(EDirection.Right);
+                }
+            }
+            else if (currentKnot.IsDirectlyRight(leaderKnot))
+            {
+                while (!currentKnot.IsTouching(leaderKnot))
+                {
+                    currentKnot.Move(EDirection.Left);
+                }
+            }
+            else if (!currentKnot.IsTouching(leaderKnot))
+            {
+                if (currentKnot.xPos < leaderKnot.xPos)
+                {
+                    currentKnot.Move(EDirection.Right);
+                    if (currentKnot.yPos < leaderKnot.yPos)
+                    {
+                        currentKnot.Move(EDirection.Up);
+                    }
+                    else 
+                    {
+                        currentKnot.Move(EDirection.Down);
+                    }
+                }
+                else if (currentKnot.xPos > leaderKnot.xPos)
+                {
+                    currentKnot.Move(EDirection.Left);
+                    if (currentKnot.yPos < leaderKnot.yPos)
+                    {
+                        currentKnot.Move(EDirection.Up);
+                    }
+                    else 
+                    {
+                        currentKnot.Move(EDirection.Down);
+                    }
+                }
+            }
+
+            currentKnot.AddCurrentPosition();
         }
     }
 }
