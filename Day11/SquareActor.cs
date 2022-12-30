@@ -8,7 +8,7 @@ namespace Day11
 
         public override int PerformOperation(int old)
         {
-            return old * old;
+            return (old * old) % Modulus;
         }
     }
 }

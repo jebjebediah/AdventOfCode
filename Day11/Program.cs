@@ -9,6 +9,7 @@ internal class Program
         IEnumerator<string> linesEnumerator = lines.GetEnumerator();
 
         List<Monkey> monkeys = new();
+        List<int> testOperands = new();
 
         while (linesEnumerator.MoveNext())
         {
@@ -26,6 +27,7 @@ internal class Program
 
             string testString = linesEnumerator.Current;
             int testOperand = GetTestArgument(testString);
+            testOperands.Add(testOperand);
 
             linesEnumerator.MoveNext(); //Move to True action
 
@@ -49,24 +51,32 @@ internal class Program
             linesEnumerator.MoveNext();
         }
 
+        int modulus = 1;
+        foreach (int val in testOperands)
+        {
+            modulus *= val;
+        }
+
         foreach (Monkey monkey in monkeys) //Hook up true and false monkeys
         {
             Monkey trueMonkey = monkeys.ElementAt(monkey.TrueMonkeyIndex);
             Monkey falseMonkey = monkeys.ElementAt(monkey.FalseMonkeyIndex);
 
             monkey.SetLinkedMonkeys(trueMonkey, falseMonkey);
+            monkey.OperationActor.Modulus = modulus;
         }
 
-        for (int i = 0; i < 20; i++)
+        const int numRounds = 10000;
+        for (int i = 0; i < numRounds; i++)
         {
             foreach (Monkey monkey in monkeys)
             {
-                monkey.InspectAll();
+                monkey.InspectAll(false);
             }
         }
 
         IEnumerable<Monkey> businestMonkeys = monkeys.OrderByDescending(m => m.InspectionCount).Take(2);
-        int totalMonkeyBusiness = businestMonkeys.ElementAt(0).InspectionCount * businestMonkeys.ElementAt(1).InspectionCount;
+        long totalMonkeyBusiness = (long)businestMonkeys.ElementAt(0).InspectionCount * (long)businestMonkeys.ElementAt(1).InspectionCount;
 
         Console.WriteLine($"Monkey business: {totalMonkeyBusiness}");
     }

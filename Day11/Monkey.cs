@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Day11
 {
     internal class Monkey
@@ -10,22 +12,36 @@ namespace Day11
         public int TrueMonkeyIndex { get; set; }
         public int FalseMonkeyIndex { get; set; }
         public int InspectionCount { get; set; }
-    
+        public int Modulus { get; set; }
+
         public void SetLinkedMonkeys(Monkey trueMonkey, Monkey falseMonkey)
         {
             TrueMonkey = trueMonkey;
             FalseMonkey = falseMonkey;
         }
 
-        public void InspectAll()
+        public void InspectAll(bool doApplyRelief)
         {
             foreach (Item item in Inventory)
             {
-                InspectionCount++;
-                item.WorryLevel = OperationActor.PerformOperation(item.WorryLevel);
-                item.WorryLevel = ApplyRelief(item.WorryLevel);
-                Monkey receiver = PassesTest(item.WorryLevel) ? TrueMonkey : FalseMonkey;
-                ThrowItem(item, receiver);
+                try
+                {
+                    InspectionCount++;
+                    item.WorryLevel = OperationActor.PerformOperation(item.WorryLevel);
+
+                    if (doApplyRelief)
+                    {
+                        item.WorryLevel = ApplyRelief(item.WorryLevel);
+                    }
+
+                    Monkey receiver = PassesTest(item.WorryLevel) ? TrueMonkey : FalseMonkey;
+                    ThrowItem(item, receiver);
+
+                }
+                catch (OverflowException)
+                {
+                    throw new Exception();
+                }
             }
 
             Inventory.Clear();
@@ -33,10 +49,10 @@ namespace Day11
 
         private int ApplyRelief(int currentLevel)
         {
-            return Convert.ToInt32(Math.Floor(currentLevel / 3.0));
+            return currentLevel / 3;
         }
 
-        private bool PassesTest(int currentLevel)
+        private bool PassesTest(BigInteger currentLevel)
         {
             return currentLevel % TestArgument == 0;
         }
