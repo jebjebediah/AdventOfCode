@@ -9,8 +9,6 @@ internal class Program
 
         List<List<Node>> fieldNodes = new();
 
-        (int, int) startingPosition = (0, 0);
-
         for (int row = 0; row < lines.Count(); row++)
         {
             string line = lines.ElementAt(row);
@@ -21,23 +19,29 @@ internal class Program
             {
                 char step = line.ElementAt(col);
 
-                Node newNode = new Node();
-
                 if (step == 'E')
                 {
-                    newNode.Height = GetIntEquivalent('z');
-                    newNode.IsEnd = true;
+                    Node newNode = new Node
+                    {
+                        Height = GetIntEquivalent('z'),
+                        IsEnd = true
+                    };
                     currentRowNodes.Add(newNode);
                 }
                 else if (step == 'S')
                 {
-                    startingPosition = (row, col);
-                    newNode.Height = GetIntEquivalent('a');
+                    Node newNode = new Node
+                    {
+                        Height = GetIntEquivalent('a'),
+                    };
                     currentRowNodes.Add(newNode);
                 }
                 else
                 {
-                    newNode.Height = GetIntEquivalent(step);
+                    Node newNode = new Node
+                    {
+                        Height = GetIntEquivalent(step)
+                    };
                     currentRowNodes.Add(newNode);
                 }
             }
@@ -45,22 +49,34 @@ internal class Program
             fieldNodes.Add(currentRowNodes);
         }
 
-        CreateGraph(fieldNodes);
+        List<Node> graphNodes = CreateGraph(fieldNodes).ToList();
+        List<Node> lowestSpots = graphNodes.Where(n => n.Height == 1).ToList();
 
-        Node startingNode = fieldNodes.ElementAt(startingPosition.Item1).ElementAt(startingPosition.Item2);
+        int bestSoFar = int.MaxValue;
+        foreach (Node start in lowestSpots)
+        {
+            int thisRun = BreadthFirstSearch(start);
 
+            if (thisRun < bestSoFar) bestSoFar = thisRun;
+
+            ResetBFS(graphNodes);
+        }
+
+        Console.WriteLine($"Min steps of all possible starts: {bestSoFar}");
+    }
+
+    private static int BreadthFirstSearch(Node startingNode)
+    {
         Queue<Node> bfsQueue = new();
         bfsQueue.Enqueue(startingNode);
 
-        int steps = 0;
         while (bfsQueue.Any())
         {
             Node currentNode = bfsQueue.Dequeue();
 
             if (currentNode.IsEnd)
             {
-                steps = currentNode.Distance;
-                break;
+                return currentNode.Distance;
             }
 
             currentNode.Visited = true;
@@ -73,10 +89,18 @@ internal class Program
                     bfsQueue.Enqueue(edge);
                 }
             }
-            
         }
 
-        Console.WriteLine($"Min steps: {steps}");
+        return int.MaxValue;
+    }
+
+    private static void ResetBFS(List<Node> graph)
+    {
+        foreach (Node node in graph.Where(n => n.Visited = true || n.Distance != 0 ))
+        {
+            node.Visited = false;
+            node.Distance = 0;
+        }
     }
 
     private static int GetIntEquivalent(char heightChar)
@@ -84,8 +108,10 @@ internal class Program
         return heightChar - 96;
     }
 
-    private static void CreateGraph(IEnumerable<IEnumerable<Node>> field)
+    private static IEnumerable<Node> CreateGraph(IEnumerable<IEnumerable<Node>> field)
     {
+        List<Node> flattenedList = new();
+
         for (int row = 0; row < field.Count(); row++)
         {
             IEnumerable<Node> currentRow = field.ElementAt(row);
@@ -119,7 +145,11 @@ internal class Program
                     ConnectIfPossible(currentNode, otherNode);
                 }
             }
+
+            flattenedList.AddRange(currentRow);
         }
+
+        return flattenedList;
     }
 
     private static void ConnectIfPossible(Node currentNode, Node otherNode)
