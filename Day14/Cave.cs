@@ -2,7 +2,8 @@ namespace Day14
 {
     internal class Cave
     {
-        private int deepestHorizontalLine;
+        private int deepestOverallDepth;
+        private int floorDepth;
         private Dictionary<CavePosition, ECaveContent> CaveSpaces;
         private CavePosition SandSource;
 
@@ -10,13 +11,18 @@ namespace Day14
         {
             CaveSpaces = new Dictionary<CavePosition, ECaveContent>();
 
-            deepestHorizontalLine = 0;
+            deepestOverallDepth = 0;
 
             SandSource = new CavePosition
             {
                 X = sandSource.x,
                 Depth = sandSource.depth
             };
+        }
+
+        public void SetFloor()
+        {
+            floorDepth = deepestOverallDepth + 2;
         }
 
         public void CreateLine((int x, int depth) startingPoint, (int x, int depth) endingPoint)
@@ -29,9 +35,9 @@ namespace Day14
 
             if (shallowestDepth == deepestDepth) // Horizontal line
             {
-                if (deepestDepth > deepestHorizontalLine)
+                if (deepestDepth > deepestOverallDepth)
                 {
-                    deepestHorizontalLine = deepestDepth;
+                    deepestOverallDepth = deepestDepth;
                 }
 
                 for (int i = leftmostX; i <= rightmostX; i++)
@@ -64,7 +70,7 @@ namespace Day14
             while (aboveVoid)
             {
                 CavePosition sandLocation = SandSource;
-                while (sandLocation.Depth < deepestHorizontalLine)
+                while (sandLocation.Depth < deepestOverallDepth)
                 {
                     if (sandLocation.Depth == int.MaxValue)
                     {
@@ -89,13 +95,11 @@ namespace Day14
                     }
                 }
 
-                if (sandLocation.Depth >= deepestHorizontalLine)
+                restedCount++;
+
+                if (sandLocation == SandSource)
                 {
-                    aboveVoid = false;
-                }
-                else
-                {
-                    restedCount++;
+                    return restedCount;
                 }
             }
 
@@ -104,7 +108,9 @@ namespace Day14
 
         private bool SpaceAvailable(CavePosition space)
         {
-            return (CaveSpaces.ContainsKey(space) && CaveSpaces[space] == ECaveContent.Empty) || !CaveSpaces.ContainsKey(space);
+            bool atFloor = space.Depth == floorDepth - 1;
+
+            return !atFloor && (CaveSpaces.ContainsKey(space) && CaveSpaces[space] == ECaveContent.Empty) || !CaveSpaces.ContainsKey(space);
         }
     }
 
@@ -115,7 +121,7 @@ namespace Day14
         Sand
     }
 
-    struct CavePosition
+    struct CavePosition : IComparable
     {
         public int X;
         public int Depth;
@@ -151,6 +157,11 @@ namespace Day14
                 X = this.X + 1,
                 Depth = this.Depth + 1
             };
+        }
+
+        public int CompareTo(CavePosition otherPosition)
+        {
+            return (this.X == otherPosition.X && this.Depth == otherPosition.Depth) as int;
         }
     }
 }
