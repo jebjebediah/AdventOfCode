@@ -6,8 +6,6 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        Console.WriteLine("Hello, World 14!");
-
         IEnumerable<string> lines = await PuzzleInputReader.GetPuzzleInputs();
 
         Cave cave = new Cave((500, 0));

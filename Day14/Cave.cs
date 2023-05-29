@@ -13,16 +13,7 @@ namespace Day14
 
             deepestOverallDepth = 0;
 
-            SandSource = new CavePosition
-            {
-                X = sandSource.x,
-                Depth = sandSource.depth
-            };
-        }
-
-        public void SetFloor()
-        {
-            floorDepth = deepestOverallDepth + 2;
+            SandSource = new CavePosition(sandSource.x, sandSource.depth);
         }
 
         public void CreateLine((int x, int depth) startingPoint, (int x, int depth) endingPoint)
@@ -38,6 +29,7 @@ namespace Day14
                 if (deepestDepth > deepestOverallDepth)
                 {
                     deepestOverallDepth = deepestDepth;
+                    floorDepth = deepestOverallDepth + 2;
                 }
 
                 for (int i = leftmostX; i <= rightmostX; i++)
@@ -66,16 +58,13 @@ namespace Day14
         public int EverythingFalls()
         {
             int restedCount = 0;
-            bool aboveVoid = true;
-            while (aboveVoid)
+            bool holePlugged = false;
+            while (!holePlugged)
             {
                 CavePosition sandLocation = SandSource;
-                while (sandLocation.Depth < deepestOverallDepth)
+                
+                while (!SpaceSitsOnFloor(sandLocation))
                 {
-                    if (sandLocation.Depth == int.MaxValue)
-                    {
-                        throw new Exception();
-                    }
                     if (SpaceAvailable(sandLocation.Below()))
                     {
                         sandLocation = sandLocation.Below();
@@ -88,18 +77,19 @@ namespace Day14
                     {
                         sandLocation = sandLocation.BelowRight();
                     }
-                    else 
+                    else
                     {
-                        CaveSpaces.Add(sandLocation, ECaveContent.Sand);
                         break;
                     }
                 }
 
+                CaveSpaces.Add(sandLocation, ECaveContent.Sand);
+
                 restedCount++;
 
-                if (sandLocation == SandSource)
+                if (sandLocation.CompareTo(SandSource) == 0)
                 {
-                    return restedCount;
+                    holePlugged = true;
                 }
             }
 
@@ -108,9 +98,12 @@ namespace Day14
 
         private bool SpaceAvailable(CavePosition space)
         {
-            bool atFloor = space.Depth == floorDepth - 1;
+            return (CaveSpaces.ContainsKey(space) && CaveSpaces[space] == ECaveContent.Empty) || !CaveSpaces.ContainsKey(space);
+        }
 
-            return !atFloor && (CaveSpaces.ContainsKey(space) && CaveSpaces[space] == ECaveContent.Empty) || !CaveSpaces.ContainsKey(space);
+        private bool SpaceSitsOnFloor(CavePosition space)
+        {
+            return space.Depth == floorDepth - 1;
         }
     }
 
@@ -119,49 +112,5 @@ namespace Day14
         Empty,
         Rock,
         Sand
-    }
-
-    struct CavePosition : IComparable
-    {
-        public int X;
-        public int Depth;
-
-        public CavePosition(int x, int depth)
-        {
-            this.X = x;
-            this.Depth = depth;
-        }
-
-        public CavePosition Below()
-        {
-            return new CavePosition
-            {
-                X = this.X,
-                Depth = this.Depth + 1
-            };
-        }
-
-        public CavePosition BelowLeft()
-        {
-            return new CavePosition
-            {
-                X = this.X - 1,
-                Depth = this.Depth + 1
-            };
-        }
-
-        public CavePosition BelowRight()
-        {
-            return new CavePosition
-            {
-                X = this.X + 1,
-                Depth = this.Depth + 1
-            };
-        }
-
-        public int CompareTo(CavePosition otherPosition)
-        {
-            return (this.X == otherPosition.X && this.Depth == otherPosition.Depth) as int;
-        }
     }
 }
