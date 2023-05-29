@@ -2,63 +2,155 @@ namespace Day14
 {
     internal class Cave
     {
-        private List<bool> blankLine;
-        private List<List<bool>> caveSlice;  // true = occupied, false = open
-        private const bool OccupiedSymbol = true;
-        private const bool OpenSymbol = !OccupiedSymbol;
         private int deepestHorizontalLine;
+        private Dictionary<CavePosition, ECaveContent> CaveSpaces;
+        private CavePosition SandSource;
 
-        public Cave(int width)
+        public Cave((int x, int depth) sandSource)
         {
-            caveSlice = new();
-
-            List<bool> caveLine = new();
-            for (int i = 0; i < 2 * width; i++) // Ok yeah I know this is iffy
-            {
-                caveLine.Add(OpenSymbol);
-            }
-
-            caveSlice.Add(caveLine);
-
-            blankLine = caveLine;
+            CaveSpaces = new Dictionary<CavePosition, ECaveContent>();
 
             deepestHorizontalLine = 0;
+
+            SandSource = new CavePosition
+            {
+                X = sandSource.x,
+                Depth = sandSource.depth
+            };
         }
 
-        public void PadCaveDepth(int targetDepth)
+        public void CreateLine((int x, int depth) startingPoint, (int x, int depth) endingPoint)
         {
-            while (caveSlice.Count < targetDepth)
+            int shallowestDepth = Math.Min(startingPoint.depth, endingPoint.depth);
+            int deepestDepth = Math.Max(startingPoint.depth, endingPoint.depth);
+
+            int leftmostX = Math.Min(startingPoint.x, endingPoint.x);
+            int rightmostX = Math.Max(startingPoint.x, endingPoint.x);
+
+            if (shallowestDepth == deepestDepth) // Horizontal line
             {
-                caveSlice.Add(blankLine);
+                if (deepestDepth > deepestHorizontalLine)
+                {
+                    deepestHorizontalLine = deepestDepth;
+                }
+
+                for (int i = leftmostX; i <= rightmostX; i++)
+                {
+                    FillIfEmpty((i, shallowestDepth));
+                }
+            }
+            else // Vertical line
+            {
+                for (int i = shallowestDepth; i <= deepestDepth; i++)
+                {
+                    FillIfEmpty((leftmostX, i));
+                }
             }
         }
 
-        public void CreateLine((int X, int Y) startingPoint, (int X, int Y) endingPoint)
+        private void FillIfEmpty((int x, int depth) position)
         {
-            int furthestDepth = Math.Max(startingPoint.Y, endingPoint.Y);
-            PadCaveDepth(furthestDepth);
-
-            bool isHorizontal = false;
-            if (startingPoint.Y == endingPoint.Y)
+            CavePosition newPosition = new CavePosition(position.x, position.depth);
+            if (SpaceAvailable(newPosition))
             {
-                isHorizontal = true;
-                deepestHorizontalLine = Math.Max(deepestHorizontalLine, startingPoint.Y);
+                CaveSpaces.Add(newPosition, ECaveContent.Rock);
             }
+        }
 
-            if (isHorizontal)
+        public int EverythingFalls()
+        {
+            int restedCount = 0;
+            bool aboveVoid = true;
+            while (aboveVoid)
             {
-                for (int i = startingPoint.X; i < endingPoint.X; i++)
+                CavePosition sandLocation = SandSource;
+                while (sandLocation.Depth < deepestHorizontalLine)
                 {
-                    caveSlice.ElementAt(startingPoint.Y)[i] = OccupiedSymbol;
+                    if (sandLocation.Depth == int.MaxValue)
+                    {
+                        throw new Exception();
+                    }
+                    if (SpaceAvailable(sandLocation.Below()))
+                    {
+                        sandLocation = sandLocation.Below();
+                    }
+                    else if (SpaceAvailable(sandLocation.BelowLeft()))
+                    {
+                        sandLocation = sandLocation.BelowLeft();
+                    }
+                    else if (SpaceAvailable(sandLocation.BelowRight()))
+                    {
+                        sandLocation = sandLocation.BelowRight();
+                    }
+                    else 
+                    {
+                        CaveSpaces.Add(sandLocation, ECaveContent.Sand);
+                        break;
+                    }
+                }
+
+                if (sandLocation.Depth >= deepestHorizontalLine)
+                {
+                    aboveVoid = false;
+                }
+                else
+                {
+                    restedCount++;
                 }
             }
-            else 
+
+            return restedCount;
+        }
+
+        private bool SpaceAvailable(CavePosition space)
+        {
+            return (CaveSpaces.ContainsKey(space) && CaveSpaces[space] == ECaveContent.Empty) || !CaveSpaces.ContainsKey(space);
+        }
+    }
+
+    enum ECaveContent
+    {
+        Empty,
+        Rock,
+        Sand
+    }
+
+    struct CavePosition
+    {
+        public int X;
+        public int Depth;
+
+        public CavePosition(int x, int depth)
+        {
+            this.X = x;
+            this.Depth = depth;
+        }
+
+        public CavePosition Below()
+        {
+            return new CavePosition
             {
-                for (int i = startingPoint.Y; i < endingPoint.Y; i++)
-                {
-                    caveSlice.ElementAt(i)[startingPoint.X] = OccupiedSymbol;
-                }
-            }
+                X = this.X,
+                Depth = this.Depth + 1
+            };
+        }
+
+        public CavePosition BelowLeft()
+        {
+            return new CavePosition
+            {
+                X = this.X - 1,
+                Depth = this.Depth + 1
+            };
+        }
+
+        public CavePosition BelowRight()
+        {
+            return new CavePosition
+            {
+                X = this.X + 1,
+                Depth = this.Depth + 1
+            };
         }
     }
 }
