@@ -62,21 +62,36 @@ namespace Day15
             return Position.Y + RadiusToBeacon >= yRow || Position.Y - RadiusToBeacon <= yRow;
         }
 
-        internal int OccupiedAtYRow(int yRow)
+        internal IEnumerable<int> OccupiedAtYRow(int yRow)
         {
             // TODO: Double-counting
             int distanceFromRow = int.Abs(Position.Y - yRow);
 
-            int maxRadius = (2 * RadiusToBeacon) + 1;
+            int maxDiameter = (2 * RadiusToBeacon) + 1;
 
-            int radiusAtRow = maxRadius - (2 * distanceFromRow);
+            int radiusAtRow = RadiusToBeacon - distanceFromRow;
+
+            int minX = Position.X - radiusAtRow;
+            int maxX = Position.X + radiusAtRow;
+
+            List<int> xPositions = new List<int>();
+
+            for (int i = minX; i <= maxX; i++)
+            {
+                if (!(NearestBeaconPosition.Y == yRow && NearestBeaconPosition.X == i))
+                {
+                    xPositions.Add(i);
+                }
+            }
+
+            int diameterAtRow = maxDiameter - (2 * distanceFromRow);
 
             if (NearestBeaconPosition.Y == yRow)
             {
-                radiusAtRow--;
+                diameterAtRow--;
             }
 
-            return radiusAtRow >= 0 ? radiusAtRow : 0;
+            return xPositions;
         }
     }
 }
