@@ -19,4 +19,4 @@ foreach (string line in lines)
                    int.Parse(matches.ElementAt(3).Value));
 }
 
-Console.WriteLine(cave.FilledAtYRow(LevelToCheck));
+Console.WriteLine(cave.FilledAtYRow(LevelToCheck).Count());

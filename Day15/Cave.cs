@@ -14,21 +14,18 @@ namespace Day15
             Sensors.Add(new Sensor(xPos, yPos, xBeacon, yBeacon));
         }
 
-        public int FilledAtYRow(int yRow)
+        public IEnumerable<int> FilledAtYRow(int yRow)
         {
             HashSet<int> filledSpots = new HashSet<int>();
 
             foreach (Sensor sensor in Sensors)
             {
-                var occupiedXs = sensor.OccupiedAtYRow(yRow);
+                IEnumerable<int> occupiedXs = sensor.OccupiedAtYRow(yRow);
 
-                foreach (int x in occupiedXs)
-                {
-                    filledSpots.Add(x);
-                }
+                filledSpots.UnionWith(occupiedXs);
             }
 
-            return filledSpots.Count;
+            return filledSpots;
         }
     }
 
@@ -70,32 +67,22 @@ namespace Day15
         internal IEnumerable<int> OccupiedAtYRow(int yRow)
         {
             int distanceFromRow = int.Abs(Position.Y - yRow);
-
-            int maxDiameter = (2 * RadiusToBeacon) + 1;
-
             int radiusAtRow = RadiusToBeacon - distanceFromRow;
+
+            if (radiusAtRow < 0)
+            {
+                return Enumerable.Empty<int>();
+            }
 
             int minX = Position.X - radiusAtRow;
             int maxX = Position.X + radiusAtRow;
 
-            List<int> xPositions = new List<int>();
+            CavePosition NearestBeacon = NearestBeaconPosition;
 
-            for (int i = minX; i <= maxX; i++)
-            {
-                if (!(NearestBeaconPosition.Y == yRow && NearestBeaconPosition.X == i))
-                {
-                    xPositions.Add(i);
-                }
-            }
+            int count = int.Abs(maxX - minX) + 1;
+            int starting = Math.Min(minX, maxX);
 
-            int diameterAtRow = maxDiameter - (2 * distanceFromRow);
-
-            if (NearestBeaconPosition.Y == yRow)
-            {
-                diameterAtRow--;
-            }
-
-            return xPositions;
+            return Enumerable.Range(starting, count).Where(i => !(NearestBeacon.Y == yRow && NearestBeacon.X == i));
         }
     }
 }
