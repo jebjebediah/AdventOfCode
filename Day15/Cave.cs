@@ -16,14 +16,19 @@ namespace Day15
 
         public int FilledAtYRow(int yRow)
         {
-            int filledCount = 0;
+            HashSet<int> filledSpots = new HashSet<int>();
 
             foreach (Sensor sensor in Sensors)
             {
-                filledCount += sensor.OccupiedAtYRow(yRow);
+                var occupiedXs = sensor.OccupiedAtYRow(yRow);
+
+                foreach (int x in occupiedXs)
+                {
+                    filledSpots.Add(x);
+                }
             }
 
-            return filledCount;
+            return filledSpots.Count;
         }
     }
 
@@ -64,7 +69,6 @@ namespace Day15
 
         internal IEnumerable<int> OccupiedAtYRow(int yRow)
         {
-            // TODO: Double-counting
             int distanceFromRow = int.Abs(Position.Y - yRow);
 
             int maxDiameter = (2 * RadiusToBeacon) + 1;
