@@ -7,8 +7,6 @@ Cave cave = new Cave();
 IEnumerable<string> lines = await PuzzleInputReader.GetPuzzleInputs("input.txt");
 Regex r = new Regex(@"(-?\d+)");
 
-const int LevelToCheck = 2000000;
-
 foreach (string line in lines)
 {
     MatchCollection matches = r.Matches(line);
@@ -19,4 +17,8 @@ foreach (string line in lines)
                    int.Parse(matches.ElementAt(3).Value));
 }
 
-Console.WriteLine(cave.FilledAtYRow(LevelToCheck).Count());
+CavePosition pos = cave.FindBeaconSpot(0, 4000000);
+Console.WriteLine($"X:{pos.X}, Y:{pos.Y}");
+
+ulong finalValue = ((ulong)pos.X * 4000000) + (ulong)pos.Y;
+Console.WriteLine($"Tuning Frequency: {finalValue}");
