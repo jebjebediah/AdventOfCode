@@ -22,7 +22,6 @@ namespace Day15
 
             foreach (Sensor sensor in Sensors)
             {
-
                 IEnumerable<int> occupiedXs = sensor.OccupiedAtYRow(yRow);
 
                 filledSpots.UnionWith(occupiedXs);
@@ -36,8 +35,13 @@ namespace Day15
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
+            int beaconCount = 0;
+
             foreach (Sensor sensor in Sensors)
             {
+                beaconCount++;
+                Console.WriteLine($"Searching beacon {beaconCount} - X:{sensor.Position.X}, Y:{sensor.Position.Y}");
+
                 IEnumerable<CavePosition> positions = sensor.JustOutsideOfRange(min, max);
 
                 foreach (CavePosition position in positions)
@@ -58,17 +62,15 @@ namespace Day15
                         stopWatch.Stop();
                         TimeSpan ts = stopWatch.Elapsed;
 
-                        string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                            ts.Hours, ts.Minutes, ts.Seconds,
-                            ts.Milliseconds / 10);
-                        Console.WriteLine("RunTime " + elapsedTime);
+                        string elapsedTime = String.Format("{0:00}.{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+                        Console.WriteLine("Found after " + elapsedTime);
 
                         return position;
                     }
                 }
             }
 
-            return new CavePosition(-1, -1);
+            return new CavePosition(int.MinValue, int.MinValue);
         }
 
         public int DistanceBetween(CavePosition first, CavePosition second)
@@ -87,6 +89,7 @@ namespace Day15
             X = x;
             Y = y;
         }
+
         public override bool Equals(object obj) =>
             (obj is CavePosition other) && Equals(other);
 
@@ -109,17 +112,9 @@ namespace Day15
         
         internal Sensor(int xPos, int yPos, int xBeacon, int yBeacon)
         {
-            Position = new CavePosition
-            {
-                X = xPos,
-                Y = yPos
-            };
+            Position = new CavePosition(xPos, yPos);
 
-            NearestBeaconPosition = new CavePosition
-            {
-                X = xBeacon,
-                Y = yBeacon
-            };
+            NearestBeaconPosition = new CavePosition(xBeacon, yBeacon);
 
             RadiusToBeacon = int.Abs(NearestBeaconPosition.X - Position.X) +
                              int.Abs(NearestBeaconPosition.Y - Position.Y);
@@ -159,14 +154,19 @@ namespace Day15
             CavePosition topPoint = new CavePosition(Position.X, Position.Y + RadiusToBeacon + 1);
             CavePosition bottomPoint = new CavePosition(Position.X, Position.Y - RadiusToBeacon - 1);
 
-            IEnumerable<CavePosition> nwRange = Enumerable.Range(0, topPoint.X - leftPoint.X).Select(i => new CavePosition(leftPoint.X + i, leftPoint.Y + i)).Where(p => (p.X >= min && p.X <= max) && (p.Y >= min && p.Y <= max));
-            IEnumerable<CavePosition> neRange = Enumerable.Range(0, rightPoint.X - topPoint.X + 1).Select(i => new CavePosition(topPoint.X + i, topPoint.Y - i)).Where(p => (p.X >= min && p.X <= max) && (p.Y >= min && p.Y <= max));
-            IEnumerable<CavePosition> swRange = Enumerable.Range(0, bottomPoint.X - leftPoint.X).Select(i => new CavePosition(leftPoint.X + i, leftPoint.Y - i)).Where(p => (p.X >= min && p.X <= max) && (p.Y >= min && p.Y <= max));
-            IEnumerable<CavePosition> seRange = Enumerable.Range(0, rightPoint.X - bottomPoint.X + 1).Select(i => new CavePosition(bottomPoint.X + i, bottomPoint.Y + i)).Where(p => (p.X >= min && p.X <= max) && (p.Y >= min && p.Y <= max));
+            IEnumerable<CavePosition> nwRange = Enumerable.Range(0, topPoint.X - leftPoint.X).Select(i => new CavePosition(leftPoint.X + i, leftPoint.Y + i)).Where(p => IsWithinRange(p, min, max));
+            IEnumerable<CavePosition> neRange = Enumerable.Range(0, rightPoint.X - topPoint.X + 1).Select(i => new CavePosition(topPoint.X + i, topPoint.Y - i)).Where(p => IsWithinRange(p, min, max));
+            IEnumerable<CavePosition> swRange = Enumerable.Range(0, bottomPoint.X - leftPoint.X).Select(i => new CavePosition(leftPoint.X + i, leftPoint.Y - i)).Where(p => IsWithinRange(p, min, max));
+            IEnumerable<CavePosition> seRange = Enumerable.Range(0, rightPoint.X - bottomPoint.X + 1).Select(i => new CavePosition(bottomPoint.X + i, bottomPoint.Y + i)).Where(p => IsWithinRange(p, min, max));
 
             IEnumerable<CavePosition> fullRange = nwRange.Union(neRange).Union(swRange).Union(seRange);
 
             return fullRange;
+        }
+
+        internal static bool IsWithinRange(CavePosition p, int min, int max)
+        {
+            return (p.X >= min && p.X <= max) && (p.Y >= min && p.Y <= max);
         }
     }
 }
