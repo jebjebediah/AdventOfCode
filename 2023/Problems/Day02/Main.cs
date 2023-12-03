@@ -28,13 +28,13 @@ public class Main : IAdventOfCodeProblem
 
             int gameNumber = int.Parse(numberRegex.Match(gameLabel).Value);
 
-            string[] handfuls = dataPart.Split(';');
+            IEnumerable<string> handfuls = GetHandfulsFromGame(dataPart);
 
             bool gameIsPossible = true;
             foreach (string handful in handfuls)
             {
                 bool handIsPossible = true;
-                string[] counts = handful.Split(',');
+                var counts = GetCountsFromHandful(handful);
 
                 foreach (string count in counts)
                 {
@@ -66,8 +66,61 @@ public class Main : IAdventOfCodeProblem
         return gamesSum.ToString();
     }
 
-    public Task<string> RunPart2(bool useSample)
+    public async Task<string> RunPart2(bool useSample)
     {
-        throw new NotImplementedException();
+        IEnumerable<string> lines = await PuzzleInputReader.GetPuzzleInputs(ProblemNumber, 2, useSample);
+
+        Regex numberRegex = new(@"\d+");
+
+        int totalPower = 0;
+
+        foreach (string line in lines)
+        {
+            int maxRed = 0;
+            int maxBlue = 0;
+            int maxGreen = 0;
+
+            var initialParts =  line.Split(':');
+
+            IEnumerable<string> handfuls = GetHandfulsFromGame(initialParts.ElementAt(1));
+
+            foreach (string handful in handfuls)
+            {
+                IEnumerable<string> counts = GetCountsFromHandful(handful);
+
+                foreach (string count in counts)
+                {
+                    string match = numberRegex.Match(count).Value;
+                    int countNum = int.Parse(match);
+
+                    if (count.Contains("red"))
+                    {
+                        maxRed = Math.Max(maxRed, countNum);
+                    }
+                    else if (count.Contains("blue"))
+                    {
+                        maxBlue = Math.Max(maxBlue, countNum);
+                    }
+                    else if (count.Contains("green"))
+                    {
+                        maxGreen = Math.Max(maxGreen, countNum);
+                    }
+                }
+            }
+
+            totalPower += maxRed * maxGreen * maxBlue;
+        }
+
+        return totalPower.ToString();
+    }
+
+    private IEnumerable<string> GetHandfulsFromGame(string game)
+    {
+        return game.Split(';');
+    }
+
+    private IEnumerable<string> GetCountsFromHandful(string handful)
+    {
+        return handful.Split(',');
     }
 }
