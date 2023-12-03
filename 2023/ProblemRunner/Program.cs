@@ -1,7 +1,8 @@
 ﻿using Common;
 
 List<IAdventOfCodeProblem> problems = [
-    new Problems.Day01.Main()
+    new Problems.Day01.Main(),
+    new Problems.Day02.Main()
 ];
 
 bool sample = false;
