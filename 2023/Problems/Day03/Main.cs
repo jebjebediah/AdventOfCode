@@ -38,11 +38,7 @@ public class Main : IAdventOfCodeProblem
         return partSum.ToString();
     }
 
-    public Task<string> RunPart2(bool useSample)
-    {
-        throw new NotImplementedException();
-    }
-
+    #region Part 1 helplers
     private static bool IsSymbol(char c)
     {
         return !char.IsNumber(c) && !c.Equals('.');
@@ -146,5 +142,66 @@ public class Main : IAdventOfCodeProblem
 
         char lowRightChar = lines.ElementAt(row + 1).ElementAt(column + 1);
         return IsSymbol(lowRightChar);
+    }
+    #endregion
+
+    public async Task<string> RunPart2(bool useSample)
+    {
+        List<string> lines = (await PuzzleInputReader.GetPuzzleInputs(ProblemNumber, 2, useSample)).ToList();
+
+        Regex gearRegex = new(@"\*");
+
+        int ratioSum = 0;
+
+        for (int i = 0; i < lines.Count; i++)
+        {
+            string line = lines.ElementAt(i);
+
+            MatchCollection gearMatches = gearRegex.Matches(line);
+
+            foreach (Match match in gearMatches)
+            {
+                int gearPosition = match.Index;
+                List<int> adjacentNumbers = GetAdjacentNumbers(i, gearPosition, lines);
+
+                if (adjacentNumbers.Count == 2)
+                {
+                    int ratio = adjacentNumbers.ElementAt(0) * adjacentNumbers.ElementAt(1);
+                    ratioSum += ratio;
+                }
+            }
+
+        }
+
+        return ratioSum.ToString();
+    }
+
+    private List<int> GetAdjacentNumbers(int row, int column, List<string> lines)
+    {
+        IEnumerable<int> rowsToCheck = Enumerable.Range(row - 1, 3).Where(i => i >= 0);
+
+        Regex numberRegex = new Regex(@"\d+");
+        List<int> numbers = [];
+
+        foreach (int i in rowsToCheck)
+        {
+            MatchCollection matches = numberRegex.Matches(lines.ElementAt(i));
+
+            foreach (Match match in matches)
+            {
+                if (MatchIsAdjacent(column, match))
+                {
+                    numbers.Add(int.Parse(match.Value));
+                }
+            }
+        }
+
+        return numbers;
+    }
+    
+    private bool MatchIsAdjacent(int column, Match match)
+    {
+        IEnumerable<int> range = Enumerable.Range(match.Index - 1, match.Length + 2);
+        return range.Contains(column);
     }
 }
