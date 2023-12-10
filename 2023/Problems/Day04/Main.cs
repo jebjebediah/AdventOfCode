@@ -42,8 +42,39 @@ public class Main : IAdventOfCodeProblem
         return cumulativeScore.ToString();
     }
 
-    public Task<string> RunPart2(bool useSample)
+    public async Task<string> RunPart2(bool useSample)
     {
-        throw new NotImplementedException();
+        List<string> lines = (await PuzzleInputReader.GetPuzzleInputs(ProblemNumber, 1, useSample)).ToList();
+        
+        Queue<int> cardsQueue = new();
+
+        foreach (int i in Enumerable.Range(0, lines.Count))
+        {
+            cardsQueue.Enqueue(i);
+        }
+        int totalCards = lines.Count;
+
+        while (cardsQueue.Count != 0)
+        {
+            int currentCard = cardsQueue.Dequeue();
+
+            string line = lines.ElementAt(currentCard);
+
+            string numbersSection = line.Split(':').ElementAt(1);
+            string[] halves = numbersSection.Split('|');
+            var winners = halves.ElementAt(0).Trim().Split(' ').Where(s => !string.IsNullOrEmpty(s));
+            var ourNumbers = halves.ElementAt(1).Trim().Split(' ').Where(s => !string.IsNullOrEmpty(s));
+
+            int overlappingNumbers = ourNumbers.Intersect(winners).Count();
+
+            IEnumerable<int> cardsToAdd = Enumerable.Range(currentCard + 1, overlappingNumbers).Where(n => n < lines.Count);
+            foreach (int card in cardsToAdd)
+            {
+                cardsQueue.Enqueue(card);
+                totalCards++;
+            }
+        }
+
+        return totalCards.ToString();
     }
 }
