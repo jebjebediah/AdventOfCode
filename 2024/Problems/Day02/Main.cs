@@ -70,19 +70,29 @@ public class Main : IAdventOfCodeProblem
         foreach (string line in lines)
         {
             IEnumerable<string> splitLine = line.Split(' ');
-            IEnumerable<int> report = splitLine.Select(s => int.Parse(s));
+            List<int> report = splitLine.Select(s => int.Parse(s)).ToList();
 
-
+            List<int> originalReport = new List<int>(report);
 
             bool safe = CheckReport(report);
             if (!safe)
             {
-                var newReport = report.Skip(1);
-                bool newSafe = CheckReport(newReport);
-                if (!newSafe) { continue; }
+                for (int i = 0; i < report.Count(); i++)
+                {
+                    List<int> newReport = new List<int>(report);
+                    newReport.RemoveAt(i);
+                    safe = CheckReport(newReport);
+                    if (safe) 
+                    {
+                        safeReportCount++;
+                        break;
+                    }
+                }
             }
-
-            safeReportCount++;
+            else
+            {
+                safeReportCount++;
+            }
         }
 
         return safeReportCount.ToString();
@@ -90,9 +100,6 @@ public class Main : IAdventOfCodeProblem
 
     private bool CheckReport(IEnumerable<int> report)
     {
-        bool dampenerUsed = false;
-        bool safeReport = true;
-
         bool ascending = report.ElementAt(0) < report.ElementAt(1);
         for (int i = 0; i < report.Count() - 1; i++)
         {
@@ -103,33 +110,11 @@ public class Main : IAdventOfCodeProblem
 
             if (!success)
             {
-                if (dampenerUsed)
-                {
-                    safeReport = false;
-                    break;
-                }
-
-                if (i + 2 == report.Count())
-                {
-                    safeReport = false;
-                    break;
-                }
-
-                int skipNext = report.ElementAt(i + 2);
-
-                bool skipSuccess = CheckAtTwoPoints(current, skipNext, ascending);
-
-                if (!skipSuccess)
-                {
-                    safeReport = false;
-                    break;
-                }
-
-                i++;
+                return false;
             }
         }
 
-        return safeReport;
+        return true;
     }
 
     private bool CheckAtTwoPoints(int a, int b, bool ascending)
