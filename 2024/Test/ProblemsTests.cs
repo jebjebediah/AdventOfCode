@@ -26,4 +26,10 @@ public class ProblemTests
     {
         await CommonTestPart2(new Problems.Day01.Main(), "31");
     }
+
+        [TestMethod]
+    public async Task TestDay02Part1()
+    {
+        await CommonTestPart1(new Problems.Day02.Main(), "2");
+    }
 }
