@@ -14,4 +14,10 @@ public class ProblemTests
     {
         Assert.AreEqual(expected, await problem.RunPart2(true));
     }
+
+    [TestMethod]
+    public async Task TestDay01Part1()
+    {
+        await CommonTestPart1(new Problems.Day01.Main(), "11");
+    }
 }
