@@ -61,8 +61,84 @@ public class Main : IAdventOfCodeProblem
         return int.Max(a, b) - int.Min(a, b);
     }
 
-    public Task<string> RunPart2(bool useSample)
+    public async Task<string> RunPart2(bool useSample)
     {
-        throw new NotImplementedException();
+        IEnumerable<string> lines = await PuzzleInputReader.GetPuzzleInputs(ProblemNumber, 1, useSample);
+
+        int safeReportCount = 0;
+
+        foreach (string line in lines)
+        {
+            IEnumerable<string> splitLine = line.Split(' ');
+            IEnumerable<int> report = splitLine.Select(s => int.Parse(s));
+
+
+
+            bool safe = CheckReport(report);
+            if (!safe)
+            {
+                var newReport = report.Skip(1);
+                bool newSafe = CheckReport(newReport);
+                if (!newSafe) { continue; }
+            }
+
+            safeReportCount++;
+        }
+
+        return safeReportCount.ToString();
+    }
+
+    private bool CheckReport(IEnumerable<int> report)
+    {
+        bool dampenerUsed = false;
+        bool safeReport = true;
+
+        bool ascending = report.ElementAt(0) < report.ElementAt(1);
+        for (int i = 0; i < report.Count() - 1; i++)
+        {
+            int current = report.ElementAt(i);
+            int next = report.ElementAt(i + 1);
+
+            bool success = CheckAtTwoPoints(current, next, ascending);
+
+            if (!success)
+            {
+                if (dampenerUsed)
+                {
+                    safeReport = false;
+                    break;
+                }
+
+                if (i + 2 == report.Count())
+                {
+                    safeReport = false;
+                    break;
+                }
+
+                int skipNext = report.ElementAt(i + 2);
+
+                bool skipSuccess = CheckAtTwoPoints(current, skipNext, ascending);
+
+                if (!skipSuccess)
+                {
+                    safeReport = false;
+                    break;
+                }
+
+                i++;
+            }
+        }
+
+        return safeReport;
+    }
+
+    private bool CheckAtTwoPoints(int a, int b, bool ascending)
+    {
+        bool ascendingNow = a < b;
+
+        int distance = DistanceBetween(a, b);
+        bool goodDistance = distance >= 1 && distance <= 3;
+
+        return ascendingNow == ascending && goodDistance;
     }
 }
