@@ -3,6 +3,7 @@
 List<IAdventOfCodeProblem> problems = [
     new Problems.Day01.Main(),
     new Problems.Day02.Main(),
+    new Problems.Day03.Main(),
 ];
 
 bool sample = false;
