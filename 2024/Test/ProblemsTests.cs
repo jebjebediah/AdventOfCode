@@ -50,4 +50,10 @@ public class ProblemTests
     {
         await CommonTestPart2(new Problems.Day03.Main(), "48");
     }
+
+    [TestMethod]
+    public async Task TestDay04Part1()
+    {
+        await CommonTestPart1(new Problems.Day04.Main(), "18");
+    }
 }
